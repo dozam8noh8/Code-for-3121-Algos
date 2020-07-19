@@ -4,7 +4,7 @@ F = [[-1 for i in range (0,100)] for j in range(0,100)]
 # for i in range (0, len(T)):
 #     for j in range(0, len(F)):
 
-def get_true(string, rang):
+def get_true(string, rang, isTrue=1):
     # odd indices will be operators (assuming we start with a boolean value)
     # the number of ways a string is true depends on the number of ways
     # two strings split at an operator is true, depending on that operator
@@ -17,91 +17,63 @@ def get_true(string, rang):
     hi = rang[1]
     target = string[low:hi+1]
     length = len(target)
+    
     if target == "T":
         T[low][hi] = 1
-        return 1
-    if target == "F":
-        T[low][hi] = 0
-        return 0
-    
-    if T[low][hi] != -1:
-        return T[low][hi]
-    # Go through all operators. 
-    # Pick operator, split into LHS eqn and RHS eqn.
-    total_true = 0
-    for i in range (low+ 1, hi+1, 2):
-        #print("calling " + msg)
-        #print("Operator is " + str(string[i]))
-        op = string[i]
-        lhs = (low,i-1)
-        rhs = (i+1, hi)
-        ntrue = 0
-        if op == "|":
-            # OR
-            # Total lhs + rhs - (False LHS * FALSE RHS)
-            # True LHS * False RHS) + False LHS * True RHS ) + (True LHS * True RHS)
-            ntrue += get_true(string, lhs) * get_true(string, rhs)
-            ntrue += get_true(string, lhs) * get_false(string, rhs)
-            ntrue += get_false(string, lhs) * get_true(string, rhs)
-        elif op == "^":
-            # XOR
-            # True LHS * False RHS + ( False LHS * True RHS )
-            ntrue += get_true(string, lhs) * get_false(string, rhs)
-            ntrue += get_false(string, lhs) * get_true(string, rhs)
-        elif op == "&":
-            # AND - This is only true when both are true, so we must multiply them.
-            # If there are 3 ways on left and 0 on right, there are 0 ways.
-            # If there are 3 ways on left and 2 on right, there are 6 ways.
-            ntrue += get_true(string, lhs) * get_true(string, rhs)
-        total_true += ntrue
-    #print(total_true)
-    T[low][hi] = total_true
-    return total_true
- 
- 
-def get_false(string, rang):
-    low = rang[0]
-    hi = rang[1]
-    target = string[low:hi+1]
-    length = len(target)
-    if target == "T":
         F[low][hi] = 0
-        return 0
-    if target == "F":
+    elif target == "F":
         F[low][hi] = 1
-        return 1
-
-    if F[low][hi] != -1:
-        return F[low][hi]
+        T[low][hi] = 0
+    
+    if isTrue:
+        if T[low][hi] != -1:
+            return T[low][hi]
+    elif not isTrue:
+        if F[low][hi] != -1:
+            return F[low][hi]
     # Go through all operators. 
     # Pick operator, split into LHS eqn and RHS eqn.
-    total_false = 0
-    for i in range (low + 1, hi+1, 2):
-        #print("calling " + "get_false")
-        #print("Operator is " + str(string[i]))
+    ntrue = 0
+    nfalse = 0
+
+
+
+
+
+    for i in range (low+ 1, hi+1, 2):
+
         op = string[i]
         lhs = (low,i-1)
         rhs = (i+1, hi)
-        nfalse = 0
+
         if op == "|":
-            nfalse += get_false(string, lhs) * get_false(string, rhs)
-
+            if isTrue:
+                ntrue += get_true(string, lhs) * get_true(string, rhs)
+                ntrue += get_true(string, lhs) * get_true(string, rhs, 0)
+                ntrue += get_true(string, lhs, 0) * get_true(string, rhs)
+            if not isTrue:
+                nfalse += get_true(string, lhs, 0) * get_true(string, rhs, 0)
         elif op == "^":
-            # XOR
-            # True LHS * False RHS + ( False LHS * True RHS )
-            nfalse += get_true(string, lhs) * get_true(string, rhs)
-            nfalse += get_false(string, lhs) * get_false(string, rhs)
+            if isTrue:
+                ntrue += get_true(string, lhs) * get_true(string, rhs, 0)
+                ntrue += get_true(string, lhs, 0) * get_true(string, rhs)
+            if not isTrue:
+                nfalse += get_true(string, lhs) * get_true(string, rhs)
+                nfalse += get_true(string, lhs, 0) * get_true(string, rhs, 0)
         elif op == "&":
-            # AND - This is only true when both are true, so we must multiply them.
-            # If there are 3 ways on left and 0 on right, there are 0 ways.
-            # If there are 3 ways on left and 2 on right, there are 6 ways.
-            nfalse += get_false(string, lhs) * get_true(string, rhs)
-            nfalse += get_true(string, lhs) * get_false(string, rhs)
-            nfalse += get_false(string, lhs) * get_false(string, rhs)
-        total_false += nfalse
-    F[low][hi] = total_false
-    return total_false
+            if isTrue:
+                ntrue += get_true(string, lhs) * get_true(string, rhs)
+            elif not isTrue:
+                nfalse += get_true(string, lhs, 0) * get_true(string, rhs)
+                nfalse += get_true(string, lhs) * get_true(string, rhs, 0)
+                nfalse += get_true(string, lhs, 0) * get_true(string, rhs, 0)
 
+    if isTrue:
+        T[low][hi] = ntrue
+        return ntrue
+    elif not isTrue:
+        F[low][hi] = nfalse
+        return nfalse
 
 
 # s = "T|F|T"
