@@ -1,5 +1,9 @@
-T = [0] * 1000
-F = [0] * 1000
+T = [[-1 for i in range (0,100)] for j in range(0,100)]
+F = [[-1 for i in range (0,100)] for j in range(0,100)]
+#print(T)
+# for i in range (0, len(T)):
+#     for j in range(0, len(F)):
+
 def get_true(string, rang):
     # odd indices will be operators (assuming we start with a boolean value)
     # the number of ways a string is true depends on the number of ways
@@ -14,10 +18,14 @@ def get_true(string, rang):
     target = string[low:hi+1]
     length = len(target)
     if target == "T":
+        T[low][hi] = 1
         return 1
     if target == "F":
+        T[low][hi] = 0
         return 0
     
+    if T[low][hi] != -1:
+        return T[low][hi]
     # Go through all operators. 
     # Pick operator, split into LHS eqn and RHS eqn.
     total_true = 0
@@ -38,23 +46,16 @@ def get_true(string, rang):
         elif op == "^":
             # XOR
             # True LHS * False RHS + ( False LHS * True RHS )
-            print("OP IS ^")
-            tmp = get_true(string, lhs) * get_false(string, rhs)
-            print("Range is: " + str(rang) + " TMP = " + str(tmp))
-            print(lhs)
-            print(rhs)
-            ntrue += tmp
+            ntrue += get_true(string, lhs) * get_false(string, rhs)
             ntrue += get_false(string, lhs) * get_true(string, rhs)
         elif op == "&":
             # AND - This is only true when both are true, so we must multiply them.
             # If there are 3 ways on left and 0 on right, there are 0 ways.
             # If there are 3 ways on left and 2 on right, there are 6 ways.
             ntrue += get_true(string, lhs) * get_true(string, rhs)
-        if ntrue > 0:
-            #pass
-            print("n true is non 0, adding total true to ntrue:" + str(total_true) + str(ntrue))
         total_true += ntrue
     #print(total_true)
+    T[low][hi] = total_true
     return total_true
  
  
@@ -62,12 +63,16 @@ def get_false(string, rang):
     low = rang[0]
     hi = rang[1]
     target = string[low:hi+1]
-    #print("TARGET IS " + target)
     length = len(target)
     if target == "T":
+        F[low][hi] = 0
         return 0
     if target == "F":
+        F[low][hi] = 1
         return 1
+
+    if F[low][hi] != -1:
+        return F[low][hi]
     # Go through all operators. 
     # Pick operator, split into LHS eqn and RHS eqn.
     total_false = 0
@@ -93,11 +98,8 @@ def get_false(string, rang):
             nfalse += get_false(string, lhs) * get_true(string, rhs)
             nfalse += get_true(string, lhs) * get_false(string, rhs)
             nfalse += get_false(string, lhs) * get_false(string, rhs)
-        if nfalse > 0:
-            #pass
-            print("n true is non 0, adding total true to nfalse:" + str(total_false) + str(nfalse))
         total_false += nfalse
-    #print(total_false)
+    F[low][hi] = total_false
     return total_false
 
 
@@ -110,9 +112,9 @@ def get_false(string, rang):
 # tup = (0,len(s)-1)
 # print(      get_true(s, tup)         )
 # print("\n\n\n")
-s = "T|T&F^T"
+s = "T&T|F|F^F^T^T^T&T^F^T&F|F^F^F&F&F|F|F^F^T|T&T"
 tup = (0,len(s)-1)
-print(      get_true(s, tup)         )
+print(      get_true(s, tup)  % 1003       )
 
 #code
 # queries = int(input("How many queries? "))
